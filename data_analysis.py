@@ -15,15 +15,19 @@ def main():
 
     # Find How many null entries
     print(data.isnull().sum())
+
     # Drop na columns
     data = data.dropna()
 
     # Need to look at the target variable
     print(data.mpg.describe())
 
-    sns.distplot(data['mpg'])
-    plt.show()
+    # Print Distribution of the target variable
+    # sns.distplot(data.mpg)
+    # plt.savefig("plots/mpg_distribution.jpg")
+    # plt.show()
 
+    # Plot all numerical features against each other
 
     print("Hello")
 
