@@ -53,6 +53,7 @@ def plot_learning_curve(estimator, title, X, y, ylim=None, cv=None, n_jobs=1, tr
     plt.plot(train_sizes, train_scores_mean, 'o-', color="r", label="Training score")
     plt.plot(train_sizes, test_scores_mean, 'o-', color="g", label="Cross-validation score")
     plt.legend(loc="best")
+    plt.grid()
     return plt
 
 
@@ -70,11 +71,6 @@ def main():
     # Create power-to-weigth attribute
     data['power_to_weight'] = ((data.horsepower * 0.7457) / data.weight)
 
-    # Split data to train validation and test set
-    X_train, X_test, y_train, y_test = train_test_split(data.loc[:, ~data.columns.isin(['mpg'])].copy(),
-                                                        data["mpg"].copy(), test_size=0.15,
-                                                        random_state=18)
-
     num_attribs = ["displacement", "horsepower", "weight", "acceleration", "power_to_weight"]
     cat_attribs = ["cylinders", "origin", "model_year"]
 
@@ -82,6 +78,16 @@ def main():
     preprocess = ColumnTransformer([("num", StandardScaler(), num_attribs),
                                    ("cat", OneHotEncoder(sparse=False), cat_attribs),
                                    ])
+
+    # Shuffle the dataset
+    data = data.sample(frac=1)
+    X = data.loc[:, ~data.columns.isin(['mpg'])].copy()
+    y = data["mpg"].copy()
+
+    X_transformed = preprocess.fit_transform(X)
+
+    # Split data to train validation and test set
+    X_train, X_test, y_train, y_test = train_test_split(X_transformed, y, test_size=0.15, random_state=0)
 
     search_space = [
         {"regressor": [SGDRegressor()],
@@ -113,8 +119,7 @@ def main():
          }
     ]
 
-    estimator = Pipeline([("preprocess", preprocess),
-                          ("regressor", SGDRegressor())])
+    estimator = Pipeline([("regressor", SGDRegressor())])
 
     # Performing grid search on all classifiers and hyperparameter combinations
     gridsearch = GridSearchCV(estimator, search_space, cv=5, verbose=1, scoring="neg_root_mean_squared_error",
@@ -124,11 +129,11 @@ def main():
     print("Best estimator: ", gridsearch.best_params_)
 
     plot_learning_curve(gridsearch.best_estimator_, "Learning curve", X_train, y_train, cv=5, n_jobs=-1)
-    plt.savefig("learning_curve.jpg")
+    plt.savefig("plots/learning_curve.jpg")
     plt.show()
 
     print("Saving best estimator for evaluations on test dataset")
-    filename = "../model/best_estimator.sav"
+    filename = "model/best_estimator.sav"
     pickle.dump(gridsearch.best_estimator_, open(filename, 'wb'))
 
     print("Load model and perform evaluations")
