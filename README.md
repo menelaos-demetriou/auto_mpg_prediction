@@ -5,7 +5,7 @@ So far SGDRegresson, GradientBoostingRegressor, RandomForestRegressor and SVR ar
 Best candidate:{'regressor': SVR(C=1000, gamma=0.001), 'regressor__C': 1000, 'regressor__gamma': 0.001, 'regressor__kernel': 'rbf'}  
 Evaluation on test set: Root Mean squared error is 3.21
 
-# To-do:
+# Further improvements:
 ETL for car names into company name.  
 Feature selection.  
 
